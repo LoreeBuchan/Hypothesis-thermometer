@@ -6,7 +6,6 @@
 <title>Fall 2026 Renewal Progress</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  /* ── Design tokens ────────────────────────────────────── */
   :root {
     --red      : #BD1F2D;
     --red-light: #FAEAEC;
@@ -21,26 +20,24 @@
     --fill-spd : 1.6s;
   }
 
-  /* ── Reset & base ─────────────────────────────────────── */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
-    font-family: 'DM Sans', sans-serif;
-    background  : var(--white);
-    color       : var(--ink);
-    min-height  : 100vh;
-    display     : flex;
+    font-family   : 'DM Sans', sans-serif;
+    background    : var(--white);
+    color         : var(--ink);
+    min-height    : 100vh;
+    display       : flex;
     flex-direction: column;
-    align-items : center;
-    padding     : 28px 20px 36px;
-    gap         : 0;
+    align-items   : center;
+    padding       : 28px 20px 36px;
+    gap           : 0;
   }
 
-  /* ── Header ───────────────────────────────────────────── */
   header {
-    width      : 100%;
-    max-width  : 620px;
-    text-align : center;
+    width        : 100%;
+    max-width    : 620px;
+    text-align   : center;
     margin-bottom: 6px;
   }
 
@@ -53,17 +50,17 @@
   }
 
   .logo-dot {
-    width         : 11px;
-    height        : 11px;
-    border-radius : 50%;
-    background    : var(--red);
+    width        : 11px;
+    height       : 11px;
+    border-radius: 50%;
+    background   : var(--red);
   }
 
   .logo-wordmark {
-    font-family  : 'DM Serif Display', serif;
-    font-size    : 15px;
+    font-family   : 'DM Serif Display', serif;
+    font-size     : 15px;
     letter-spacing: 0.08em;
-    color        : var(--red);
+    color         : var(--red);
     text-transform: uppercase;
   }
 
@@ -76,22 +73,51 @@
   }
 
   .subtitle {
-    font-size  : 13px;
-    color      : var(--muted);
-    font-weight: 500;
+    font-size     : 13px;
+    color         : var(--muted);
+    font-weight   : 500;
     letter-spacing: 0.04em;
   }
 
-  /* ── Divider ──────────────────────────────────────────── */
-  .divider {
-    width        : 100%;
-    max-width    : 620px;
-    height       : 1px;
-    background   : var(--border);
-    margin       : 20px 0;
+  .filter-bar {
+    width          : 100%;
+    max-width      : 620px;
+    display        : flex;
+    justify-content: center;
+    margin         : 16px 0 0;
   }
 
-  /* ── Thermometer grid ─────────────────────────────────── */
+  .filter-bar select {
+    font-family        : 'DM Sans', sans-serif;
+    font-size          : 13px;
+    font-weight        : 500;
+    color              : var(--ink);
+    background         : var(--white);
+    border             : 1.5px solid var(--border);
+    border-radius      : 8px;
+    padding            : 8px 32px 8px 14px;
+    appearance         : none;
+    cursor             : pointer;
+    outline            : none;
+    background-image   : url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat  : no-repeat;
+    background-position: right 12px center;
+    transition         : border-color 0.2s;
+  }
+
+  .filter-bar select:hover,
+  .filter-bar select:focus {
+    border-color: var(--red);
+  }
+
+  .divider {
+    width     : 100%;
+    max-width : 620px;
+    height    : 1px;
+    background: var(--border);
+    margin    : 20px 0;
+  }
+
   .thermo-grid {
     display        : flex;
     gap            : 40px;
@@ -102,7 +128,6 @@
     max-width      : 620px;
   }
 
-  /* ── Individual thermometer ───────────────────────────── */
   .thermo-wrap {
     display       : flex;
     flex-direction: column;
@@ -112,7 +137,6 @@
     max-width     : 240px;
   }
 
-  /* Top label: current value */
   .thermo-current {
     font-family  : 'DM Serif Display', serif;
     font-size    : clamp(22px, 5vw, 30px);
@@ -125,32 +149,30 @@
   .thermo-current.loading { opacity: 0.3; }
 
   .thermo-pct {
-    font-size    : 12px;
-    font-weight  : 600;
-    color        : var(--green);
+    font-size     : 12px;
+    font-weight   : 600;
+    color         : var(--green);
     letter-spacing: 0.06em;
-    margin-bottom: 14px;
-    transition   : opacity 0.4s;
+    margin-bottom : 14px;
+    transition    : opacity 0.4s;
   }
 
-  /* SVG tube */
   .thermo-svg-wrap {
-    position: relative;
-    width   : 100%;
-    display : flex;
+    position       : relative;
+    width          : 100%;
+    display        : flex;
     justify-content: center;
   }
 
-  /* Scale ticks on the right */
   .tick-labels {
-    position: absolute;
-    right   : calc(50% - 58px);
-    top     : 0;
-    height  : 100%;
-    display : flex;
-    flex-direction: column;
+    position       : absolute;
+    right          : calc(50% - 58px);
+    top            : 0;
+    height         : 100%;
+    display        : flex;
+    flex-direction : column;
     justify-content: space-between;
-    padding : 8px 0 44px;
+    padding        : 8px 0 44px;
   }
 
   .tick-label {
@@ -160,7 +182,6 @@
     white-space: nowrap;
   }
 
-  /* Bottom label: target */
   .thermo-target {
     margin-top : 12px;
     font-size  : 12px;
@@ -174,18 +195,16 @@
     font-weight: 600;
   }
 
-  /* Metric title */
   .thermo-title {
-    margin-top   : 10px;
-    font-size    : 13px;
-    font-weight  : 600;
-    color        : var(--red);
+    margin-top    : 10px;
+    font-size     : 13px;
+    font-weight   : 600;
+    color         : var(--red);
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    text-align   : center;
+    text-align    : center;
   }
 
-  /* ── Footer ───────────────────────────────────────────── */
   .as-of {
     margin-top : 28px;
     font-size  : 11px;
@@ -201,7 +220,6 @@
     display    : none;
   }
 
-  /* ── Loading shimmer ──────────────────────────────────── */
   @keyframes shimmer {
     0%   { opacity: 0.4; }
     50%  { opacity: 0.9; }
@@ -222,6 +240,14 @@
   <p class="subtitle">Apr 1 – Sep 30, 2026 &nbsp;·&nbsp; Team Total</p>
 </header>
 
+<div class="filter-bar">
+  <select id="owner-select" onchange="handleOwnerChange()">
+    <option value="all">👥 Team Total</option>
+    <option value="78292777">Jade Garcia</option>
+    <option value="211750000">Joe Ferraro</option>
+  </select>
+</div>
+
 <div class="divider"></div>
 
 <div class="thermo-grid">
@@ -229,33 +255,24 @@
   <!-- ARR Thermometer -->
   <div class="thermo-wrap" id="arr-wrap">
     <div class="thermo-current shimmer" id="arr-current">$0</div>
-    <div class="thermo-pct shimmer"    id="arr-pct">0% of target</div>
+    <div class="thermo-pct shimmer"     id="arr-pct">0% of target</div>
     <div class="thermo-svg-wrap">
       <div class="tick-labels" id="arr-ticks"></div>
       <svg id="arr-svg" width="90" height="320" viewBox="0 0 90 320" xmlns="http://www.w3.org/2000/svg">
-        <!-- tube body shadow -->
         <ellipse cx="45" cy="278" rx="22" ry="7" fill="rgba(0,0,0,0.07)"/>
-        <!-- tube body bg -->
         <rect x="27" y="12" width="36" height="260" rx="18" fill="#f3f4f6"/>
-        <rect x="27" y="12" width="36" height="260" rx="18"
-              fill="none" stroke="#d1d5db" stroke-width="1.5"/>
-        <!-- fill clip -->
+        <rect x="27" y="12" width="36" height="260" rx="18" fill="none" stroke="#d1d5db" stroke-width="1.5"/>
         <clipPath id="arr-clip">
           <rect x="27" y="12" width="36" height="260" rx="18"/>
         </clipPath>
-        <!-- fill bar — height animated via JS -->
-        <rect id="arr-fill"
-              x="27" y="272" width="36" height="0" rx="0"
+        <rect id="arr-fill" x="27" y="272" width="36" height="0" rx="0"
               fill="url(#green-grad)" clip-path="url(#arr-clip)"/>
-        <!-- bulb -->
         <circle cx="45" cy="285" r="20" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1.5"/>
         <circle id="arr-bulb" cx="45" cy="285" r="15" fill="#e5e7eb"/>
-        <!-- tick lines -->
         <line x1="27" y1="62"  x2="22" y2="62"  stroke="#d1d5db" stroke-width="1"/>
         <line x1="27" y1="112" x2="22" y2="112" stroke="#d1d5db" stroke-width="1"/>
         <line x1="27" y1="162" x2="22" y2="162" stroke="#d1d5db" stroke-width="1"/>
         <line x1="27" y1="212" x2="22" y2="212" stroke="#d1d5db" stroke-width="1"/>
-        <!-- gradient def -->
         <defs>
           <linearGradient id="green-grad" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%"   stop-color="#4cc98a"/>
@@ -271,19 +288,17 @@
   <!-- Deal Count Thermometer -->
   <div class="thermo-wrap" id="deal-wrap">
     <div class="thermo-current shimmer" id="deal-current">0</div>
-    <div class="thermo-pct shimmer"    id="deal-pct">0% of target</div>
+    <div class="thermo-pct shimmer"     id="deal-pct">0% of target</div>
     <div class="thermo-svg-wrap">
       <div class="tick-labels" id="deal-ticks"></div>
       <svg id="deal-svg" width="90" height="320" viewBox="0 0 90 320" xmlns="http://www.w3.org/2000/svg">
         <ellipse cx="45" cy="278" rx="22" ry="7" fill="rgba(0,0,0,0.07)"/>
         <rect x="27" y="12" width="36" height="260" rx="18" fill="#f3f4f6"/>
-        <rect x="27" y="12" width="36" height="260" rx="18"
-              fill="none" stroke="#d1d5db" stroke-width="1.5"/>
+        <rect x="27" y="12" width="36" height="260" rx="18" fill="none" stroke="#d1d5db" stroke-width="1.5"/>
         <clipPath id="deal-clip">
           <rect x="27" y="12" width="36" height="260" rx="18"/>
         </clipPath>
-        <rect id="deal-fill"
-              x="27" y="272" width="36" height="0" rx="0"
+        <rect id="deal-fill" x="27" y="272" width="36" height="0" rx="0"
               fill="url(#green-grad2)" clip-path="url(#deal-clip)"/>
         <circle cx="45" cy="285" r="20" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1.5"/>
         <circle id="deal-bulb" cx="45" cy="285" r="15" fill="#e5e7eb"/>
@@ -309,20 +324,27 @@
 <p class="error-msg" id="error-msg">Unable to load data. Please check the proxy URL.</p>
 
 <script>
-// ── CONFIG ─────────────────────────────────────────────────
-// Replace with your deployed GAS Web App URL after publishing
 var PROXY_URL = 'https://script.google.com/macros/s/AKfycbxuGgskWQJ-uRGX6jzYsE5wz-q74vNPf95D7KBqEZ97-eNX9eLencUIkQdtuUn1qMY/exec';
 
-// ── TUBE GEOMETRY ──────────────────────────────────────────
-// Tube inner fill zone: y=12 (top) to y=272 (bottom of tube body)
-// Total fillable height = 260px
 var TUBE_BOTTOM = 272;
 var TUBE_HEIGHT = 260;
 
-// ── TICK LABELS ────────────────────────────────────────────
+var TARGETS = {
+  'all':       { arr: 1968095, deals: 198 },
+  '78292777':  { arr: 1094479, deals: 141 },
+  '211750000': { arr: 873616,  deals: 57  },
+};
+
+var currentOwner = 'all';
+
+function handleOwnerChange() {
+  currentOwner = document.getElementById('owner-select').value;
+  loadData();
+}
+
 function buildTicks(containerId, target, isArr) {
   var el = document.getElementById(containerId);
-  // 4 ticks at 25%, 50%, 75%, 100%
+  el.innerHTML = '';
   [100, 75, 50, 25].forEach(function(pct) {
     var div = document.createElement('div');
     div.className = 'tick-label';
@@ -336,19 +358,19 @@ function buildTicks(containerId, target, isArr) {
   });
 }
 
-buildTicks('arr-ticks',  1968095, true);
-buildTicks('deal-ticks', 198,     false);
+function resetFill(fillId, bulbId) {
+  document.getElementById(fillId).setAttribute('height', 0);
+  document.getElementById(fillId).setAttribute('y', TUBE_BOTTOM);
+  document.getElementById(bulbId).setAttribute('fill', '#e5e7eb');
+}
 
-// ── ANIMATION ──────────────────────────────────────────────
 function animateFill(fillId, bulbId, pct) {
-  var fill = document.getElementById(fillId);
-  var bulb = document.getElementById(bulbId);
-  var targetH = Math.round((pct / 100) * TUBE_HEIGHT);
-  var targetY = TUBE_BOTTOM - targetH;
-  var start   = null;
+  var fill     = document.getElementById(fillId);
+  var bulb     = document.getElementById(bulbId);
+  var targetH  = Math.round((pct / 100) * TUBE_HEIGHT);
+  var start    = null;
   var duration = 1600;
 
-  // Bulb colour: green once any fill present
   if (pct > 0) {
     bulb.style.transition = 'fill 0.6s 0.4s';
     bulb.setAttribute('fill', '#1a9e5c');
@@ -358,7 +380,6 @@ function animateFill(fillId, bulbId, pct) {
     if (!start) start = ts;
     var elapsed  = ts - start;
     var progress = Math.min(elapsed / duration, 1);
-    // Ease-out cubic
     var ease     = 1 - Math.pow(1 - progress, 3);
     var h        = Math.round(targetH * ease);
     var y        = TUBE_BOTTOM - h;
@@ -369,7 +390,6 @@ function animateFill(fillId, bulbId, pct) {
   requestAnimationFrame(step);
 }
 
-// ── FORMAT HELPERS ─────────────────────────────────────────
 function fmtARR(n) {
   if (n >= 1000000) return '$' + (n/1000000).toFixed(2) + 'M';
   if (n >= 1000)    return '$' + (n/1000).toFixed(1) + 'k';
@@ -384,44 +404,66 @@ function fmtDate(iso) {
   });
 }
 
-// ── LOAD DATA ──────────────────────────────────────────────
+function updateSubtitle(owner) {
+  var names = {
+    'all':       'Team Total',
+    '78292777':  'Jade Garcia',
+    '211750000': 'Joe Ferraro',
+  };
+  document.querySelector('.subtitle').innerHTML =
+    'Apr 1 \u2013 Sep 30, 2026 \u00a0\u00b7\u00a0 ' + (names[owner] || 'Team Total');
+}
+
 function loadData() {
-  fetch(PROXY_URL)
+  var url = PROXY_URL + (currentOwner !== 'all' ? '?owner=' + currentOwner : '');
+
+  resetFill('arr-fill',  'arr-bulb');
+  resetFill('deal-fill', 'deal-bulb');
+
+  var targets = TARGETS[currentOwner] || TARGETS['all'];
+  buildTicks('arr-ticks',  targets.arr,   true);
+  buildTicks('deal-ticks', targets.deals, false);
+
+  updateSubtitle(currentOwner);
+
+  ['arr-current','arr-pct','deal-current','deal-pct'].forEach(function(id) {
+    document.getElementById(id).classList.add('shimmer');
+  });
+
+  document.getElementById('error-msg').style.display = 'none';
+
+  fetch(url)
     .then(function(r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
     })
     .then(function(data) {
-      // Remove shimmer
       ['arr-current','arr-pct','deal-current','deal-pct'].forEach(function(id) {
         document.getElementById(id).classList.remove('shimmer');
       });
 
-      // ARR
       document.getElementById('arr-current').textContent = fmtARR(data.arr.current);
       document.getElementById('arr-pct').textContent     = data.arr.pct + '% of target';
+      document.getElementById('arr-target').innerHTML    = 'Target: <strong>' + fmtARR(data.arr.target) + '</strong>';
       animateFill('arr-fill', 'arr-bulb', data.arr.pct);
 
-      // Deals
       document.getElementById('deal-current').textContent = data.deals.current + ' deals';
       document.getElementById('deal-pct').textContent     = data.deals.pct + '% of target';
+      document.getElementById('deal-target').innerHTML    = 'Target: <strong>' + data.deals.target + ' deals</strong>';
       animateFill('deal-fill', 'deal-bulb', data.deals.pct);
 
-      // Timestamp
       document.getElementById('as-of').textContent = 'As of ' + fmtDate(data.asOf);
     })
     .catch(function(err) {
       console.error(err);
-      document.getElementById('as-of').style.display   = 'none';
-      document.getElementById('error-msg').style.display = 'block';
-      // Remove shimmer on error
       ['arr-current','arr-pct','deal-current','deal-pct'].forEach(function(id) {
         document.getElementById(id).classList.remove('shimmer');
       });
+      document.getElementById('as-of').style.display     = 'none';
+      document.getElementById('error-msg').style.display = 'block';
     });
 }
 
-// Auto-refresh every 5 minutes
 loadData();
 setInterval(loadData, 5 * 60 * 1000);
 </script>

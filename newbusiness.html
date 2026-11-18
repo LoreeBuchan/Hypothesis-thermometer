@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Business Progress</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red      : #BD1F2D;
+    --red-light: #FAEAEC;
+    --red-mid  : #e8707a;
+    --green    : #1a9e5c;
+    --green-mid: #4cc98a;
+    --green-bg : #eafaf3;
+    --ink      : #1a1a2e;
+    --muted    : #6b7280;
+    --border   : #e5e7eb;
+    --white    : #ffffff;
+    --fill-spd : 1.6s;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family   : 'DM Sans', sans-serif;
+    background    : var(--white);
+    color         : var(--ink);
+    min-height    : 100vh;
+    display       : flex;
+    flex-direction: column;
+    align-items   : center;
+    padding       : 28px 20px 36px;
+    gap           : 0;
+  }
+
+  header {
+    width        : 100%;
+    max-width    : 620px;
+    text-align   : center;
+    margin-bottom: 6px;
+  }
+
+  .logo-bar {
+    display        : flex;
+    align-items    : center;
+    justify-content: center;
+    gap            : 9px;
+    margin-bottom  : 14px;
+  }
+
+  .logo-dot {
+    width        : 11px;
+    height       : 11px;
+    border-radius: 50%;
+    background   : var(--red);
+  }
+
+  .logo-wordmark {
+    font-family   : 'DM Serif Display', serif;
+    font-size     : 15px;
+    letter-spacing: 0.08em;
+    color         : var(--red);
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-family  : 'DM Serif Display', serif;
+    font-size    : clamp(20px, 4vw, 26px);
+    color        : var(--ink);
+    line-height  : 1.2;
+    margin-bottom: 4px;
+  }
+
+  .subtitle {
+    font-size     : 13px;
+    color         : var(--muted);
+    font-weight   : 500;
+    letter-spacing: 0.04em;
+  }
+
+  .filter-bar {
+    width          : 100%;
+    max-width      : 620px;
+    display        : flex;
+    justify-content: center;
+    flex-wrap      : wrap;
+    gap            : 10px;
+    margin         : 16px 0 0;
+  }
+
+  .status-pill {
+    display       : inline-block;
+    margin-top    : 10px;
+    font-size     : 11px;
+    font-weight   : 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding       : 4px 12px;
+    border-radius : 999px;
+  }
+  .status-pill.live  { color: var(--green); background: var(--green-bg); }
+  .status-pill.final { color: var(--muted); background: #f3f4f6; }
+  .status-pill.hidden { display: none; }
+
+  .filter-bar select {
+    font-family        : 'DM Sans', sans-serif;
+    font-size          : 13px;
+    font-weight        : 500;
+    color              : var(--ink);
+    background         : var(--white);
+    border             : 1.5px solid var(--border);
+    border-radius      : 8px;
+    padding            : 8px 32px 8px 14px;
+    appearance         : none;
+    cursor             : pointer;
+    outline            : none;
+    background-image   : url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat  : no-repeat;
+    background-position: right 12px center;
+    transition         : border-color 0.2s;
+  }
+
+  .filter-bar select:hover,
+  .filter-bar select:focus {
+    border-color: var(--red);
+  }
+
+  .divider {
+    width     : 100%;
+    max-width : 620px;
+    height    : 1px;
+    background: var(--border);
+    margin    : 20px 0;
+  }
+
+  .thermo-grid {
+    display        : flex;
+    gap            : 40px;
+    justify-content: center;
+    align-items    : flex-end;
+    flex-wrap      : wrap;
+    width          : 100%;
+    max-width      : 620px;
+  }
+
+  .thermo-wrap {
+    display       : flex;
+    flex-direction: column;
+    align-items   : center;
+    gap           : 0;
+    flex          : 1 1 200px;
+    max-width     : 240px;
+  }
+
+  .thermo-current {
+    font-family  : 'DM Serif Display', serif;
+    font-size    : clamp(22px, 5vw, 30px);
+    color        : var(--green);
+    line-height  : 1;
+    margin-bottom: 4px;
+    transition   : opacity 0.4s;
+  }
+
+  .thermo-current.loading { opacity: 0.3; }
+
+  .thermo-pct {
+    font-size     : 12px;
+    font-weight   : 600;
+    color         : var(--green);
+    letter-spacing: 0.06em;
+    margin-bottom : 14px;
+    transition    : opacity 0.4s;
+  }
+
+  .thermo-svg-wrap {
+    position       : relative;
+    width          : 100%;
+    display        : flex;
+    justify-content: center;
+  }
+
+  .tick-labels {
+    position       : absolute;
+    right          : calc(50% - 58px);
+    top            : 0;
+    height         : 100%;
+    display        : flex;
+    flex-direction : column;
+    justify-content: space-between;
+    padding        : 8px 0 44px;
+  }
+
+  .tick-label {
+    font-size  : 10px;
+    color      : var(--muted);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .thermo-target {
+    margin-top : 12px;
+    font-size  : 12px;
+    color      : var(--muted);
+    font-weight: 500;
+    text-align : center;
+  }
+
+  .thermo-target strong {
+    color      : var(--ink);
+    font-weight: 600;
+  }
+
+  .thermo-title {
+    margin-top    : 10px;
+    font-size     : 13px;
+    font-weight   : 600;
+    color         : var(--red);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-align    : center;
+  }
+
+  .deal-line {
+    margin-top : 22px;
+    font-size  : 14px;
+    font-weight: 600;
+    color      : var(--ink);
+    text-align : center;
+  }
+
+  .as-of {
+    margin-top : 28px;
+    font-size  : 11px;
+    color      : var(--muted);
+    text-align : center;
+  }
+
+  .error-msg {
+    color      : var(--red);
+    font-size  : 13px;
+    text-align : center;
+    margin-top : 20px;
+    display    : none;
+  }
+
+  @keyframes shimmer {
+    0%   { opacity: 0.4; }
+    50%  { opacity: 0.9; }
+    100% { opacity: 0.4; }
+  }
+  .shimmer { animation: shimmer 1.4s ease-in-out infinite; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-bar">
+    <div class="logo-dot"></div>
+    <span class="logo-wordmark">Hypothesis</span>
+    <div class="logo-dot"></div>
+  </div>
+  <h1 id="title">New Business Progress</h1>
+  <p class="subtitle" id="subtitle">&nbsp;</p>
+  <span class="status-pill hidden" id="status-pill"></span>
+</header>
+
+<div class="filter-bar">
+  <select id="season-select" onchange="handleSeasonChange()" aria-label="Season"></select>
+  <select id="owner-select" onchange="handleOwnerChange()" aria-label="Owner">
+    <option value="all">&#128101; Team Total</option>
+  </select>
+</div>
+
+<div class="divider"></div>
+
+<div class="thermo-grid">
+
+  <!-- ARR Thermometer -->
+  <div class="thermo-wrap" id="arr-wrap">
+    <div class="thermo-current shimmer" id="arr-current">$0</div>
+    <div class="thermo-pct shimmer"     id="arr-pct">0% of target</div>
+    <div class="thermo-svg-wrap">
+      <div class="tick-labels" id="arr-ticks"></div>
+      <svg id="arr-svg" width="90" height="320" viewBox="0 0 90 320" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="45" cy="278" rx="22" ry="7" fill="rgba(0,0,0,0.07)"/>
+        <rect x="27" y="12" width="36" height="260" rx="18" fill="#f3f4f6"/>
+        <rect x="27" y="12" width="36" height="260" rx="18" fill="none" stroke="#d1d5db" stroke-width="1.5"/>
+        <clipPath id="arr-clip">
+          <rect x="27" y="12" width="36" height="260" rx="18"/>
+        </clipPath>
+        <rect id="arr-fill" x="27" y="272" width="36" height="0" rx="0"
+              fill="url(#green-grad)" clip-path="url(#arr-clip)"/>
+        <circle cx="45" cy="285" r="20" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1.5"/>
+        <circle id="arr-bulb" cx="45" cy="285" r="15" fill="#e5e7eb"/>
+        <line x1="27" y1="62"  x2="22" y2="62"  stroke="#d1d5db" stroke-width="1"/>
+        <line x1="27" y1="112" x2="22" y2="112" stroke="#d1d5db" stroke-width="1"/>
+        <line x1="27" y1="162" x2="22" y2="162" stroke="#d1d5db" stroke-width="1"/>
+        <line x1="27" y1="212" x2="22" y2="212" stroke="#d1d5db" stroke-width="1"/>
+        <defs>
+          <linearGradient id="green-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="#4cc98a"/>
+            <stop offset="100%" stop-color="#1a9e5c"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <div class="thermo-target" id="arr-target">&nbsp;</div>
+    <div class="thermo-title">ARR Closed Won</div>
+  </div>
+
+</div>
+
+<p class="deal-line" id="deal-line">&nbsp;</p>
+
+<p class="as-of" id="as-of">Loading data…</p>
+<p class="error-msg" id="error-msg">Unable to load data right now. Please try again in a few minutes.</p>
+
+<script>
+var PROXY_URL = 'https://script.google.com/macros/s/AKfycbznFKYTDqx58G2Qpz-8ClQSKGFZhJNtiZYjLAG4vFUwlKRw30qRNJiEk1rG5Sbpxlgb/exec';
+
+var TUBE_BOTTOM = 272;
+var TUBE_HEIGHT = 260;
+
+// Optional web address settings:  ?season=Fall 2026   ?owner=78292777
+var qs = new URLSearchParams(window.location.search);
+var currentSeason = qs.get('season') || '';   // '' = whichever season is live
+var currentOwner  = qs.get('owner')  || 'all';
+
+var shownH = { 'arr-fill': 0 };   // current fill height, so refreshes animate smoothly
+var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var IDS = ['arr-current','arr-pct'];
+
+function handleSeasonChange() {
+  currentSeason = document.getElementById('season-select').value;
+  currentOwner  = 'all';
+  loadData();
+}
+
+function handleOwnerChange() {
+  currentOwner = document.getElementById('owner-select').value;
+  loadData();
+}
+
+function buildTicks(containerId, target, isArr) {
+  var el = document.getElementById(containerId);
+  el.innerHTML = '';
+  if (!target) return;
+  [100, 75, 50, 25].forEach(function(pct) {
+    var div = document.createElement('div');
+    div.className = 'tick-label';
+    var val = Math.round(target * pct / 100);
+    div.textContent = isArr
+      ? '$' + (val >= 1000000
+          ? (val/1000000).toFixed(2) + 'M'
+          : (val/1000).toFixed(0) + 'k')
+      : val;
+    el.appendChild(div);
+  });
+}
+
+function animateFill(fillId, bulbId, pct) {
+  var fill    = document.getElementById(fillId);
+  var bulb    = document.getElementById(bulbId);
+  var capped  = Math.max(0, Math.min(pct || 0, 100));          // tube never overflows
+  var targetH = Math.round((capped / 100) * TUBE_HEIGHT);
+  var fromH   = shownH[fillId] || 0;
+  var start   = null;
+  var duration = 1200;
+
+  bulb.style.transition = 'fill 0.6s 0.2s';
+  bulb.setAttribute('fill', capped > 0 ? '#1a9e5c' : '#e5e7eb');
+
+  function step(ts) {
+    if (!start) start = ts;
+    var progress = Math.min((ts - start) / duration, 1);
+    var ease = 1 - Math.pow(1 - progress, 3);
+    var h = Math.round(fromH + (targetH - fromH) * ease);
+    fill.setAttribute('height', h);
+    fill.setAttribute('y', TUBE_BOTTOM - h);
+    shownH[fillId] = h;
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function fmtARR(n) {
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(2) + 'M';
+  if (n >= 1000)    return '$' + (n/1000).toFixed(1) + 'k';
+  return '$' + n;
+}
+
+function fmtDate(iso) {
+  var d = new Date(iso);
+  return d.toLocaleDateString('en-US', {
+    month: 'long', day: 'numeric', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', timeZoneName: 'short'
+  });
+}
+
+// '2026-04-01' + '2026-09-30'  ->  'Apr 1 – Sep 30, 2026'
+function fmtRange(start, end) {
+  var s = start.split('-'), e = end.split('-');
+  var sTxt = MONTHS[parseInt(s[1], 10) - 1] + ' ' + parseInt(s[2], 10);
+  var eTxt = MONTHS[parseInt(e[1], 10) - 1] + ' ' + parseInt(e[2], 10) + ', ' + e[0];
+  if (s[0] !== e[0]) sTxt += ', ' + s[0];
+  return sTxt + ' – ' + eTxt;
+}
+
+function rebuildSelect(sel, items, current) {
+  sel.innerHTML = '';
+  items.forEach(function(it) {
+    var o = document.createElement('option');
+    o.value = it.value;
+    o.textContent = it.text;
+    sel.appendChild(o);
+  });
+  sel.value = current;
+}
+
+function showError() {
+  IDS.forEach(function(id) { document.getElementById(id).classList.remove('shimmer'); });
+  document.getElementById('as-of').style.display     = 'none';
+  document.getElementById('error-msg').style.display = 'block';
+}
+
+function loadData() {
+  var params = [];
+  if (currentSeason)          params.push('season=' + encodeURIComponent(currentSeason));
+  if (currentOwner !== 'all') params.push('owner='  + encodeURIComponent(currentOwner));
+  var url = PROXY_URL + (params.length ? '?' + params.join('&') : '');
+
+  IDS.forEach(function(id) { document.getElementById(id).classList.add('shimmer'); });
+  document.getElementById('error-msg').style.display = 'none';
+
+  fetch(url)
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(data) {
+      if (data.error) throw new Error(data.error);
+
+      // If the chosen rep isn't on this season's list, fall back to the team
+      var ids = data.owners.map(function(o) { return o.id; });
+      if (currentOwner !== 'all' && ids.indexOf(currentOwner) === -1) {
+        currentOwner = 'all';
+        loadData();
+        return;
+      }
+
+      IDS.forEach(function(id) { document.getElementById(id).classList.remove('shimmer'); });
+      currentSeason = data.season.label;
+
+      // Dropdowns
+      rebuildSelect(document.getElementById('season-select'),
+        data.seasons.map(function(s) {
+          return { value: s.label, text: s.label + (s.status === 'live' ? ' (live)' : ' (final)') };
+        }), currentSeason);
+      var ownerItems = [{ value: 'all', text: '👥 Team Total' }]
+        .concat(data.owners.map(function(o) { return { value: o.id, text: o.name }; }));
+      rebuildSelect(document.getElementById('owner-select'), ownerItems, currentOwner);
+
+      // Title, dates, status
+      var ownerName = 'Team Total';
+      data.owners.forEach(function(o) { if (o.id === currentOwner) ownerName = o.name; });
+      document.getElementById('title').textContent = data.season.label + ' New Business Progress';
+      document.title = data.season.label + ' New Business Progress';
+      document.getElementById('subtitle').innerHTML =
+        fmtRange(data.season.start, data.season.end) + '  ·  ' + ownerName;
+      var pill = document.getElementById('status-pill');
+      pill.className = 'status-pill ' + data.season.status;
+      pill.textContent = data.season.status === 'live' ? 'Live · season in progress' : 'Final results';
+
+      // ARR thermometer
+      buildTicks('arr-ticks', data.arr.set ? data.arr.target : 0, true);
+      document.getElementById('arr-current').textContent = fmtARR(data.arr.current);
+      document.getElementById('arr-pct').textContent     = data.arr.set ? data.arr.pct + '% of target' : 'Target not set';
+      document.getElementById('arr-target').innerHTML    = data.arr.set
+        ? 'Target: <strong>' + fmtARR(data.arr.target) + '</strong>' : '&nbsp;';
+      animateFill('arr-fill', 'arr-bulb', data.arr.set ? data.arr.pct : 0);
+
+      // Deal count is shown as a plain number (no deal target for New Business)
+      var n = data.deals.current;
+      document.getElementById('deal-line').textContent =
+        n + (n === 1 ? ' new business deal' : ' new business deals') + ' closed won';
+
+      document.getElementById('as-of').style.display = 'block';
+      document.getElementById('as-of').textContent = 'As of ' + fmtDate(data.asOf);
+    })
+    .catch(function(err) {
+      console.error(err);
+      showError();
+    });
+}
+
+loadData();
+setInterval(loadData, 5 * 60 * 1000);
+</script>
+</body>
+</html>

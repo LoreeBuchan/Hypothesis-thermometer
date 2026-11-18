@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fall 2026 Renewal Progress</title>
+<title>Renewal Progress</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -84,8 +84,24 @@
     max-width      : 620px;
     display        : flex;
     justify-content: center;
+    flex-wrap      : wrap;
+    gap            : 10px;
     margin         : 16px 0 0;
   }
+
+  .status-pill {
+    display       : inline-block;
+    margin-top    : 10px;
+    font-size     : 11px;
+    font-weight   : 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding       : 4px 12px;
+    border-radius : 999px;
+  }
+  .status-pill.live  { color: var(--green); background: var(--green-bg); }
+  .status-pill.final { color: var(--muted); background: #f3f4f6; }
+  .status-pill.hidden { display: none; }
 
   .filter-bar select {
     font-family        : 'DM Sans', sans-serif;
@@ -236,15 +252,15 @@
     <span class="logo-wordmark">Hypothesis</span>
     <div class="logo-dot"></div>
   </div>
-  <h1>Fall 2026 Renewal Progress</h1>
-  <p class="subtitle">Apr 1 – Sep 30, 2026 &nbsp;·&nbsp; Team Total</p>
+  <h1 id="title">Renewal Progress</h1>
+  <p class="subtitle" id="subtitle">&nbsp;</p>
+  <span class="status-pill hidden" id="status-pill"></span>
 </header>
 
 <div class="filter-bar">
-  <select id="owner-select" onchange="handleOwnerChange()">
-    <option value="all">👥 Team Total</option>
-    <option value="78292777">Jade Garcia</option>
-    <option value="211750000">Joe Ferraro</option>
+  <select id="season-select" onchange="handleSeasonChange()" aria-label="Season"></select>
+  <select id="owner-select" onchange="handleOwnerChange()" aria-label="Owner">
+    <option value="all">&#128101; Team Total</option>
   </select>
 </div>
 
@@ -281,7 +297,7 @@
         </defs>
       </svg>
     </div>
-    <div class="thermo-target" id="arr-target">Target: <strong>$1,968,095</strong></div>
+    <div class="thermo-target" id="arr-target">&nbsp;</div>
     <div class="thermo-title">ARR Closed Won</div>
   </div>
 
@@ -314,14 +330,14 @@
         </defs>
       </svg>
     </div>
-    <div class="thermo-target" id="deal-target">Target: <strong>198 deals</strong></div>
+    <div class="thermo-target" id="deal-target">&nbsp;</div>
     <div class="thermo-title">Deals Closed Won</div>
   </div>
 
 </div>
 
 <p class="as-of" id="as-of">Loading data…</p>
-<p class="error-msg" id="error-msg">Unable to load data. Please check the proxy URL.</p>
+<p class="error-msg" id="error-msg">Unable to load data right now. Please try again in a few minutes.</p>
 
 <script>
 var PROXY_URL = 'https://script.google.com/macros/s/AKfycbxuGgskWQJ-uRGX6jzYsE5wz-q74vNPf95D7KBqEZ97-eNX9eLencUIkQdtuUn1qMY/exec';
@@ -329,13 +345,20 @@ var PROXY_URL = 'https://script.google.com/macros/s/AKfycbxuGgskWQJ-uRGX6jzYsE5w
 var TUBE_BOTTOM = 272;
 var TUBE_HEIGHT = 260;
 
-var TARGETS = {
-  'all':       { arr: 1968095, deals: 198 },
-  '78292777':  { arr: 1094479, deals: 141 },
-  '211750000': { arr: 873616,  deals: 57  },
-};
+// Optional web address settings:  ?season=Fall 2026   ?owner=78292777
+var qs = new URLSearchParams(window.location.search);
+var currentSeason = qs.get('season') || '';   // '' = whichever season is live
+var currentOwner  = qs.get('owner')  || 'all';
 
-var currentOwner = 'all';
+var shownH = { 'arr-fill': 0, 'deal-fill': 0 };   // current fill height, so refreshes animate smoothly
+var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var IDS = ['arr-current','arr-pct','deal-current','deal-pct'];
+
+function handleSeasonChange() {
+  currentSeason = document.getElementById('season-select').value;
+  currentOwner  = 'all';
+  loadData();
+}
 
 function handleOwnerChange() {
   currentOwner = document.getElementById('owner-select').value;
@@ -345,6 +368,7 @@ function handleOwnerChange() {
 function buildTicks(containerId, target, isArr) {
   var el = document.getElementById(containerId);
   el.innerHTML = '';
+  if (!target) return;
   [100, 75, 50, 25].forEach(function(pct) {
     var div = document.createElement('div');
     div.className = 'tick-label';
@@ -358,33 +382,26 @@ function buildTicks(containerId, target, isArr) {
   });
 }
 
-function resetFill(fillId, bulbId) {
-  document.getElementById(fillId).setAttribute('height', 0);
-  document.getElementById(fillId).setAttribute('y', TUBE_BOTTOM);
-  document.getElementById(bulbId).setAttribute('fill', '#e5e7eb');
-}
-
 function animateFill(fillId, bulbId, pct) {
-  var fill     = document.getElementById(fillId);
-  var bulb     = document.getElementById(bulbId);
-  var targetH  = Math.round((pct / 100) * TUBE_HEIGHT);
-  var start    = null;
-  var duration = 1600;
+  var fill    = document.getElementById(fillId);
+  var bulb    = document.getElementById(bulbId);
+  var capped  = Math.max(0, Math.min(pct || 0, 100));          // tube never overflows
+  var targetH = Math.round((capped / 100) * TUBE_HEIGHT);
+  var fromH   = shownH[fillId] || 0;
+  var start   = null;
+  var duration = 1200;
 
-  if (pct > 0) {
-    bulb.style.transition = 'fill 0.6s 0.4s';
-    bulb.setAttribute('fill', '#1a9e5c');
-  }
+  bulb.style.transition = 'fill 0.6s 0.2s';
+  bulb.setAttribute('fill', capped > 0 ? '#1a9e5c' : '#e5e7eb');
 
   function step(ts) {
     if (!start) start = ts;
-    var elapsed  = ts - start;
-    var progress = Math.min(elapsed / duration, 1);
-    var ease     = 1 - Math.pow(1 - progress, 3);
-    var h        = Math.round(targetH * ease);
-    var y        = TUBE_BOTTOM - h;
+    var progress = Math.min((ts - start) / duration, 1);
+    var ease = 1 - Math.pow(1 - progress, 3);
+    var h = Math.round(fromH + (targetH - fromH) * ease);
     fill.setAttribute('height', h);
-    fill.setAttribute('y', y);
+    fill.setAttribute('y', TUBE_BOTTOM - h);
+    shownH[fillId] = h;
     if (progress < 1) requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
@@ -404,32 +421,39 @@ function fmtDate(iso) {
   });
 }
 
-function updateSubtitle(owner) {
-  var names = {
-    'all':       'Team Total',
-    '78292777':  'Jade Garcia',
-    '211750000': 'Joe Ferraro',
-  };
-  document.querySelector('.subtitle').innerHTML =
-    'Apr 1 \u2013 Sep 30, 2026 \u00a0\u00b7\u00a0 ' + (names[owner] || 'Team Total');
+// '2026-04-01' + '2026-09-30'  ->  'Apr 1 – Sep 30, 2026'
+function fmtRange(start, end) {
+  var s = start.split('-'), e = end.split('-');
+  var sTxt = MONTHS[parseInt(s[1], 10) - 1] + ' ' + parseInt(s[2], 10);
+  var eTxt = MONTHS[parseInt(e[1], 10) - 1] + ' ' + parseInt(e[2], 10) + ', ' + e[0];
+  if (s[0] !== e[0]) sTxt += ', ' + s[0];
+  return sTxt + ' – ' + eTxt;
+}
+
+function rebuildSelect(sel, items, current) {
+  sel.innerHTML = '';
+  items.forEach(function(it) {
+    var o = document.createElement('option');
+    o.value = it.value;
+    o.textContent = it.text;
+    sel.appendChild(o);
+  });
+  sel.value = current;
+}
+
+function showError() {
+  IDS.forEach(function(id) { document.getElementById(id).classList.remove('shimmer'); });
+  document.getElementById('as-of').style.display     = 'none';
+  document.getElementById('error-msg').style.display = 'block';
 }
 
 function loadData() {
-  var url = PROXY_URL + (currentOwner !== 'all' ? '?owner=' + currentOwner : '');
+  var params = [];
+  if (currentSeason)          params.push('season=' + encodeURIComponent(currentSeason));
+  if (currentOwner !== 'all') params.push('owner='  + encodeURIComponent(currentOwner));
+  var url = PROXY_URL + (params.length ? '?' + params.join('&') : '');
 
-  resetFill('arr-fill',  'arr-bulb');
-  resetFill('deal-fill', 'deal-bulb');
-
-  var targets = TARGETS[currentOwner] || TARGETS['all'];
-  buildTicks('arr-ticks',  targets.arr,   true);
-  buildTicks('deal-ticks', targets.deals, false);
-
-  updateSubtitle(currentOwner);
-
-  ['arr-current','arr-pct','deal-current','deal-pct'].forEach(function(id) {
-    document.getElementById(id).classList.add('shimmer');
-  });
-
+  IDS.forEach(function(id) { document.getElementById(id).classList.add('shimmer'); });
   document.getElementById('error-msg').style.display = 'none';
 
   fetch(url)
@@ -438,29 +462,61 @@ function loadData() {
       return r.json();
     })
     .then(function(data) {
-      ['arr-current','arr-pct','deal-current','deal-pct'].forEach(function(id) {
-        document.getElementById(id).classList.remove('shimmer');
-      });
+      if (data.error) throw new Error(data.error);
 
+      // If the chosen rep isn't on this season's list, fall back to the team
+      var ids = data.owners.map(function(o) { return o.id; });
+      if (currentOwner !== 'all' && ids.indexOf(currentOwner) === -1) {
+        currentOwner = 'all';
+        loadData();
+        return;
+      }
+
+      IDS.forEach(function(id) { document.getElementById(id).classList.remove('shimmer'); });
+      currentSeason = data.season.label;
+
+      // Dropdowns
+      rebuildSelect(document.getElementById('season-select'),
+        data.seasons.map(function(s) {
+          return { value: s.label, text: s.label + (s.status === 'live' ? ' (live)' : ' (final)') };
+        }), currentSeason);
+      var ownerItems = [{ value: 'all', text: '👥 Team Total' }]
+        .concat(data.owners.map(function(o) { return { value: o.id, text: o.name }; }));
+      rebuildSelect(document.getElementById('owner-select'), ownerItems, currentOwner);
+
+      // Title, dates, status
+      var ownerName = 'Team Total';
+      data.owners.forEach(function(o) { if (o.id === currentOwner) ownerName = o.name; });
+      document.getElementById('title').textContent = data.season.label + ' Renewal Progress';
+      document.title = data.season.label + ' Renewal Progress';
+      document.getElementById('subtitle').innerHTML =
+        fmtRange(data.season.start, data.season.end) + '  ·  ' + ownerName;
+      var pill = document.getElementById('status-pill');
+      pill.className = 'status-pill ' + data.season.status;
+      pill.textContent = data.season.status === 'live' ? 'Live · season in progress' : 'Final results';
+
+      // ARR thermometer
+      buildTicks('arr-ticks', data.arr.set ? data.arr.target : 0, true);
       document.getElementById('arr-current').textContent = fmtARR(data.arr.current);
-      document.getElementById('arr-pct').textContent     = data.arr.pct + '% of target';
-      document.getElementById('arr-target').innerHTML    = 'Target: <strong>' + fmtARR(data.arr.target) + '</strong>';
-      animateFill('arr-fill', 'arr-bulb', data.arr.pct);
+      document.getElementById('arr-pct').textContent     = data.arr.set ? data.arr.pct + '% of target' : 'Target not set';
+      document.getElementById('arr-target').innerHTML    = data.arr.set
+        ? 'Target: <strong>' + fmtARR(data.arr.target) + '</strong>' : '&nbsp;';
+      animateFill('arr-fill', 'arr-bulb', data.arr.set ? data.arr.pct : 0);
 
-      document.getElementById('deal-current').textContent = data.deals.current + ' deals';
-      document.getElementById('deal-pct').textContent     = data.deals.pct + '% of target';
-      document.getElementById('deal-target').innerHTML    = 'Target: <strong>' + data.deals.target + ' deals</strong>';
-      animateFill('deal-fill', 'deal-bulb', data.deals.pct);
+      // Deal count thermometer
+      buildTicks('deal-ticks', data.deals.set ? data.deals.target : 0, false);
+      document.getElementById('deal-current').textContent = data.deals.current + (data.deals.current === 1 ? ' deal' : ' deals');
+      document.getElementById('deal-pct').textContent     = data.deals.set ? data.deals.pct + '% of target' : 'Target not set';
+      document.getElementById('deal-target').innerHTML    = data.deals.set
+        ? 'Target: <strong>' + data.deals.target + ' deals</strong>' : '&nbsp;';
+      animateFill('deal-fill', 'deal-bulb', data.deals.set ? data.deals.pct : 0);
 
+      document.getElementById('as-of').style.display = 'block';
       document.getElementById('as-of').textContent = 'As of ' + fmtDate(data.asOf);
     })
     .catch(function(err) {
       console.error(err);
-      ['arr-current','arr-pct','deal-current','deal-pct'].forEach(function(id) {
-        document.getElementById(id).classList.remove('shimmer');
-      });
-      document.getElementById('as-of').style.display     = 'none';
-      document.getElementById('error-msg').style.display = 'block';
+      showError();
     });
 }
 
